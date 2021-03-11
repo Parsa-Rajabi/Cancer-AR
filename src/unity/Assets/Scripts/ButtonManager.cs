@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ButtonManager : MonoBehaviour
@@ -28,7 +30,7 @@ public class ButtonManager : MonoBehaviour
 
     [SerializeField] GameObject helpBtn;
     [SerializeField] GameObject helpPnl;
-    
+
     // panel displayed after cancer nodule is selected
     [SerializeField] GameObject nodulePnl;
 
@@ -45,15 +47,28 @@ public class ButtonManager : MonoBehaviour
     // axis status based on number of taps
     string axisStatus = "";
     [SerializeField] GameObject modeImage;
-    public Sprite xImage; 
+    public Sprite xImage;
     public Sprite yImage;
     public Sprite zImage;
+
+    void Start()
+    {
+        if (!PhotonNetwork.IsConnected) // 1
+        {
+            SceneManager.LoadScene("Multiplayer");
+            Debug.Log("Loaded Scene");
+            return;
+        }
+         
+    }
 
     // displays kidneys when selected
     public void SelecKidneys()
     {
         lungs.SetActive(false);
         kidneys.SetActive(true);
+        Debug.Log("Instantiating Kidney");
+        kidneys = PhotonNetwork.Instantiate("models/model2", kidneys.transform.position, kidneys.transform.rotation, 0);
         Setup();
     }
 
@@ -62,13 +77,16 @@ public class ButtonManager : MonoBehaviour
     {
         lungs.SetActive(true);
         kidneys.SetActive(false);
+        Debug.Log("Instantiating Lung");
+        // 3
+        lungs = PhotonNetwork.Instantiate("models/model", lungs.transform.position, lungs.transform.rotation, 0);
         Setup();
     }
 
     // functions is called on initial load
     private void Setup()
     {
-        
+        NetworkController.StartMulti();
         modelSelectPnl.SetActive(false);
         modelTranslateScript = GameObject.FindWithTag("model").GetComponent<Lean.Touch.LeanTranslate>();
         modelScaleScript = GameObject.FindWithTag("model").GetComponent<Lean.Touch.LeanScale>();
@@ -82,7 +100,7 @@ public class ButtonManager : MonoBehaviour
             texts.Add(GameObject.FindWithTag("notes").transform.GetChild(i).gameObject);
             texts[i].SetActive(false);
         }
-        
+
         helpPnl.SetActive(true);
         // detect finger tap         
         Lean.Touch.LeanTouch.OnFingerTap += HandleFingerTap;
@@ -145,7 +163,7 @@ public class ButtonManager : MonoBehaviour
                 axisStatus = "Tap Once to Reset";
                 break;
         }
-        
+
         // TODO: Look into making this "less" expensive and refactoring it 
         modeLbl.GetComponent<TMPro.TextMeshProUGUI>().text = axisStatus;
         texts[textsCounter == 0 ? textsCounter : textsCounter - 1].GetComponent<Lean.Touch.LeanTranslate>().enabled =

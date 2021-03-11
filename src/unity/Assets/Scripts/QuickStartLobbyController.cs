@@ -14,7 +14,10 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster() //Callback function for when the first connection is established successfully.
     {
         PhotonNetwork.AutomaticallySyncScene = true; //Makes it so whatever scene the master client has loaded is the scene all other clients will load
-        quickStartButton.SetActive(true);
+        Debug.Log("Cloud Region is " + PhotonNetwork.CloudRegion);
+        PhotonNetwork.JoinRandomRoom(); //First tries to join an existing room
+        // quickStartButton.SetActive(true);
+        
     }
     public void QuickStart() //Paired to the Quick Start button
     {
